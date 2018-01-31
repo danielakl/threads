@@ -2,6 +2,7 @@
 #include <regex>
 #include <thread>
 #include <cmath>
+#include <mutex>
 
 using namespace std;
 
@@ -61,13 +62,16 @@ int main() {
     // Find prime numbers.
     vector<unsigned> primes;
     vector<thread> threads;
+    mutex numMutex;
     for (size_t i = 0; i < numThreads; i++) {
         auto start = unsigned(ceil(min + (i * (delta / numThreads))));
         auto end = unsigned(floor(min + (i + 1 * (delta / numThreads))));
         //threads.emplace_back(thread(findPrimes, start, end, primes));
-        threads.emplace_back([start, end, &primes] {
+        threads.emplace_back([start, end, &primes, &numMutex] {
             for (unsigned j = start; j <= end; j++) {
                 if (isPrime(j)) {
+                    cout <<  j << ", ";
+                    lock_guard<mutex> lock(numMutex);
                     primes.push_back(j);
                 }
             }
@@ -80,6 +84,12 @@ int main() {
     }
 
     // Sort prime table.
+
+    // Print primes
+    //for (auto &prime : primes) {
+    //    cout << prime << ", ";
+    //}
+    cout << endl;
 
     //}
     return 0;
