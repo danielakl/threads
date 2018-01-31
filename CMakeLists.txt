@@ -4,3 +4,6 @@ project(threads)
 set(CMAKE_CXX_STANDARD 11)
 
 add_executable(threads main.cpp)
+
+find_package(Threads REQUIRED)
+target_link_libraries(threads Threads::Threads)
