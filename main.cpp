@@ -1,8 +1,9 @@
+#include "prime.hpp"
 #include <iostream>
 #include <regex>
 #include <thread>
 #include <cmath>
-#include <mutex>
+
 
 using namespace std;
 
@@ -11,28 +12,7 @@ vector<unsigned> primes;
 vector<thread> threads;
 mutex numMutex;
 
-bool isPrime(const unsigned number) {
-    if (number < 2) return false;
-    for (unsigned i = 2; i < number; i++) {
-        if (number % i == 0) {
-            return false;
-        }
-    }
-    return true;
-}
-
-void findPrimes(const unsigned start, const unsigned end) {
-    std::thread::id this_id = std::this_thread::get_id();
-    for (unsigned i = start; i <= end; i++) {
-        if (isPrime(i)) {
-            lock_guard<mutex> lock(numMutex);
-            primes.push_back(i);
-        }
-    }
-}
-
 int main() {
-    //while (true) {
     // Get interval from user.
     string input;
     cout << "Enter a range to find prime numbers within: ";
@@ -64,7 +44,7 @@ int main() {
     for (size_t i = 0; i < numThreads; i++) {
         auto start = unsigned(ceil(min + (i * (delta / numThreads))));
         auto end = unsigned(floor(min + ((i + 1) * (delta / numThreads))));
-        threads.emplace_back(thread(findPrimes, start, end));
+        threads.emplace_back(thread(findPrimes, start, end, ref(primes), ref(numMutex)));
     }
 
     // Wait for all threads to finish.
@@ -73,17 +53,16 @@ int main() {
     }
 
     // Sort prime table.
-    sort (primes.begin(), primes.end());
+    sort(primes.begin(), primes.end());
 
     // Print primes
     for (auto i = primes.begin(); i != primes.end(); ++i) {
-        if (i != primes.end()-1) {
+        if (i != primes.end() - 1) {
             cout << *i << " | ";
         } else {
             cout << *i << endl;
         }
     }
 
-    //}
     return 0;
 }
