@@ -7,9 +7,13 @@
 using namespace std;
 
 unsigned numThreads = thread::hardware_concurrency();
+vector<unsigned> primes;
+vector<thread> threads;
+mutex numMutex;
 
 bool isPrime(const unsigned number) {
-    for (size_t i = 3; i < number; i++) {
+    if (number < 2) return false;
+    for (unsigned i = 2; i < number; i++) {
         if (number % i == 0) {
             return false;
         }
@@ -17,9 +21,11 @@ bool isPrime(const unsigned number) {
     return true;
 }
 
-void findPrimes(const unsigned start, const unsigned end, vector<unsigned> &primes) {
+void findPrimes(const unsigned start, const unsigned end) {
+    std::thread::id this_id = std::this_thread::get_id();
     for (unsigned i = start; i <= end; i++) {
         if (isPrime(i)) {
+            lock_guard<mutex> lock(numMutex);
             primes.push_back(i);
         }
     }
@@ -29,20 +35,17 @@ int main() {
     //while (true) {
     // Get interval from user.
     string input;
-    cout << "[DEBUG] Number of Threads: " << numThreads << endl;
     cout << "Enter a range to find prime numbers within: ";
     getline(cin, input);
-    cout << "[DEBUG] Line: " << input << endl;
 
     // Extract numbers.
     regex regex("[0-9]+");
     sregex_iterator iterator(input.begin(), input.end(), regex);
     sregex_iterator itEnd;
     unsigned values[2];
-    for (unsigned int &value : values) {
+    for (unsigned &value : values) {
         if (iterator != itEnd) {
-            cout << "[DEBUG] Match: " << (*iterator)[0] << endl;
-            value = stoi((*iterator)[0]);
+            value = unsigned(stoi((*iterator)[0]));
             ++iterator;
         }
     }
@@ -55,27 +58,13 @@ int main() {
         max = min;
         min = temp;
     }
-    cout << "[DEBUG] min: " << min << endl;
-    cout << "[DEBUG] max: " << max << endl;
     int delta = max - min;
 
     // Find prime numbers.
-    vector<unsigned> primes;
-    vector<thread> threads;
-    mutex numMutex;
     for (size_t i = 0; i < numThreads; i++) {
         auto start = unsigned(ceil(min + (i * (delta / numThreads))));
-        auto end = unsigned(floor(min + (i + 1 * (delta / numThreads))));
-        //threads.emplace_back(thread(findPrimes, start, end, primes));
-        threads.emplace_back([start, end, &primes, &numMutex] {
-            for (unsigned j = start; j <= end; j++) {
-                if (isPrime(j)) {
-                    cout <<  j << ", ";
-                    lock_guard<mutex> lock(numMutex);
-                    primes.push_back(j);
-                }
-            }
-        });
+        auto end = unsigned(floor(min + ((i + 1) * (delta / numThreads))));
+        threads.emplace_back(thread(findPrimes, start, end));
     }
 
     // Wait for all threads to finish.
@@ -84,12 +73,16 @@ int main() {
     }
 
     // Sort prime table.
+    sort (primes.begin(), primes.end());
 
     // Print primes
-    //for (auto &prime : primes) {
-    //    cout << prime << ", ";
-    //}
-    cout << endl;
+    for (auto i = primes.begin(); i != primes.end(); ++i) {
+        if (i != primes.end()-1) {
+            cout << *i << " | ";
+        } else {
+            cout << *i << endl;
+        }
+    }
 
     //}
     return 0;
