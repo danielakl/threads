@@ -3,6 +3,7 @@
 #include <regex>
 #include <thread>
 #include <cmath>
+#include <set>
 
 
 using namespace std;
@@ -42,8 +43,8 @@ int main() {
 
     // Find prime numbers.
     for (size_t i = 0; i < numThreads; i++) {
-        auto start = unsigned(ceil(min + (i * (delta / numThreads))));
-        auto end = unsigned(floor(min + ((i + 1) * (delta / numThreads))));
+        unsigned start = min + (i * delta / numThreads);
+        unsigned end = min + ((i + 1) * delta / numThreads);
         threads.emplace_back(thread(findPrimes, start, end, ref(primes), ref(numMutex)));
     }
 
@@ -54,6 +55,10 @@ int main() {
 
     // Sort prime table.
     sort(primes.begin(), primes.end());
+
+    // Remove duplicates
+    set<int> s( primes.begin(), primes.end() );
+    primes.assign( s.begin(), s.end() );
 
     // Print primes
     for (auto i = primes.begin(); i != primes.end(); ++i) {
