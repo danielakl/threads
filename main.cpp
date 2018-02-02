@@ -22,7 +22,7 @@ int main() {
     regex regex("[0-9]+");
     sregex_iterator iterator(input.begin(), input.end(), regex);
     sregex_iterator itEnd;
-    unsigned values[2];
+    unsigned values[2] = {0, 0};
     for (unsigned &value : values) {
         if (iterator != itEnd) {
             value = unsigned(stoi((*iterator)[0]));
