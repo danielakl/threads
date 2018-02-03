@@ -42,10 +42,14 @@ int main() {
     int delta = max - min;
 
     // Find prime numbers.
-    for (size_t i = 0; i < numThreads; i++) {
-        unsigned start = min + (i * delta / numThreads);
-        unsigned end = min + ((i + 1) * delta / numThreads);
-        threads.emplace_back(thread(findPrimes, start, end, ref(primes), ref(numMutex)));
+    if (numThreads == 0) {
+        findPrimes(min, max, ref(primes), ref(numMutex));
+    } else {
+        for (size_t i = 0; i < numThreads; i++) {
+            unsigned start = min + (i * delta / numThreads);
+            unsigned end = min + ((i + 1) * delta / numThreads);
+            threads.emplace_back(thread(findPrimes, start, end, ref(primes), ref(numMutex)));
+        }
     }
 
     // Wait for all threads to finish.
