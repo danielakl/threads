@@ -21,7 +21,7 @@ int main() {
 
     std::mutex numMutex;
     std::set<ulli> foundPrimes;
-    findPrimes(0, 30, foundPrimes, numMutex);
+    findPrimes(0, 30, 1, foundPrimes, numMutex);
     for (const ulli found : foundPrimes) {
         assert(find(primes.begin(), primes.end(), found) != primes.end());
         assert(find(nonPrimes.begin(), nonPrimes.end(), found) == nonPrimes.end());

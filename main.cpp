@@ -52,12 +52,10 @@ int main() {
     // Find prime numbers.
     cout << "Running on " << numThreads << " thread" << ((numThreads == 1) ? "." : "s.") << endl;
     if (numThreads == 0) {
-        findPrimes(min, max, primes, numMutex);
+        findPrimes(min, max, 1, primes, numMutex);
     } else {
         for (size_t i = 0; i < numThreads; i++) {
-            ulli start = min + (i * delta / numThreads);
-            ulli end = min + ((i + 1) * delta / numThreads);
-            threads.emplace_back(thread(findPrimes, start, end, ref(primes), ref(numMutex)));
+            threads.emplace_back(thread(findPrimes, min + i, max, numThreads, ref(primes), ref(numMutex)));
         }
     }
 

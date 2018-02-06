@@ -19,8 +19,8 @@ bool isPrime(const ulli number) {
     return true;
 }
 
-void findPrimes(const ulli start, const ulli end, set<ulli> &primes, mutex &numMutex) {
-    for (ulli i = start; i <= end; i++) {
+void findPrimes(const ulli start, const ulli end, const ulli jump, set<ulli> &primes, mutex &numMutex) {
+    for (ulli i = start; i <= end; i += jump) {
         if (isPrime(i)) {
             lock_guard<mutex> lock(numMutex);
             primes.insert(i);
