@@ -1,5 +1,5 @@
 #include <mutex>
-#include <vector>
+#include <set>
 
 using namespace std;
 
@@ -13,12 +13,11 @@ bool isPrime(const unsigned number) {
     return true;
 }
 
-void findPrimes(const unsigned start, const unsigned end, vector<unsigned> &primes, mutex &numMutex) {
-//    std::thread::id this_id = std::this_thread::get_id(); // TODO: Remove this?
+void findPrimes(const unsigned start, const unsigned end, set<unsigned> &primes, mutex &numMutex) {
     for (unsigned i = start; i <= end; i++) {
         if (isPrime(i)) {
             lock_guard<mutex> lock(numMutex);
-            primes.push_back(i);
+            primes.insert(i);
         }
     }
 }

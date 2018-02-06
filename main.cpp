@@ -2,18 +2,16 @@
 #include <iostream>
 #include <regex>
 #include <thread>
-#include <cmath>
-#include <set>
 
 
 using namespace std;
 
-unsigned numThreads = thread::hardware_concurrency();
-vector<unsigned> primes;
-vector<thread> threads;
-mutex numMutex;
-
 int main() {
+    unsigned numThreads = thread::hardware_concurrency();
+    set<unsigned> primes;
+    vector<thread> threads;
+    mutex numMutex;
+
     // Get interval from user.
     string input;
     cout << "Enter a range to find prime numbers within: ";
@@ -42,10 +40,15 @@ int main() {
     int delta = max - min;
 
     // Find prime numbers.
-    for (size_t i = 0; i < numThreads; i++) {
-        unsigned start = min + (i * delta / numThreads);
-        unsigned end = min + ((i + 1) * delta / numThreads);
-        threads.emplace_back(thread(findPrimes, start, end, ref(primes), ref(numMutex)));
+    cout << "Running on " << numThreads << " thread" << ((numThreads == 1) ? "." : "s.") << endl;
+    if (numThreads == 0) {
+        findPrimes(min, max, primes, numMutex);
+    } else {
+        for (size_t i = 0; i < numThreads; i++) {
+            unsigned start = min + (i * delta / numThreads);
+            unsigned end = min + ((i + 1) * delta / numThreads);
+            threads.emplace_back(thread(findPrimes, start, end, ref(primes), ref(numMutex)));
+        }
     }
 
     // Wait for all threads to finish.
@@ -53,19 +56,13 @@ int main() {
         thread.join();
     }
 
-    // Sort prime table.
-    sort(primes.begin(), primes.end());
-
-    // Remove duplicates
-    set<int> s( primes.begin(), primes.end() );
-    primes.assign( s.begin(), s.end() );
-
     // Print primes
-    for (auto i = primes.begin(); i != primes.end(); ++i) {
-        if (i != primes.end() - 1) {
-            cout << *i << " | ";
+    for (auto it = primes.cbegin(); it != primes.cend(); ++it) {
+        cout << *it;
+        if (it != --primes.cend()) {
+            cout << " | ";
         } else {
-            cout << *i << endl;
+            cout << endl;
         }
     }
 
