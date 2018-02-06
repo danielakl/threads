@@ -41,30 +41,30 @@ int main() {
     }
     ulli delta = max - min;
 
-#pragma omp parallel for
-    for (ulli j = min; j < max; ++j) {
-        if (isPrime(j)) {
-            lock_guard <mutex> lock(numMutex);
-            primes.insert(j);
+//#pragma omp parallel for
+//    for (ulli j = min; j < max; ++j) {
+//        if (isPrime(j)) {
+//            lock_guard <mutex> lock(numMutex);
+//            primes.insert(j);
+//        }
+//    }
+
+    // Find prime numbers.
+    cout << "Running on " << numThreads << " thread" << ((numThreads == 1) ? "." : "s.") << endl;
+    if (numThreads == 0) {
+        findPrimes(min, max, primes, numMutex);
+    } else {
+        for (size_t i = 0; i < numThreads; i++) {
+            ulli start = min + (i * delta / numThreads);
+            ulli end = min + ((i + 1) * delta / numThreads);
+            threads.emplace_back(thread(findPrimes, start, end, ref(primes), ref(numMutex)));
         }
     }
 
-//    // Find prime numbers.
-//    cout << "Running on " << numThreads << " thread" << ((numThreads == 1) ? "." : "s.") << endl;
-//    if (numThreads == 0) {
-//        findPrimes(min, max, primes, numMutex);
-//    } else {
-//        for (size_t i = 0; i < numThreads; i++) {
-//            ulli start = min + (i * delta / numThreads);
-//            ulli end = min + ((i + 1) * delta / numThreads);
-//            threads.emplace_back(thread(findPrimes, start, end, ref(primes), ref(numMutex)));
-//        }
-//    }
-//
-//    // Wait for all threads to finish.
-//    for (auto &thread : threads) {
-//        thread.join();
-//    }
+    // Wait for all threads to finish.
+    for (auto &thread : threads) {
+        thread.join();
+    }
 
     // Print primes
     for (auto it = primes.cbegin(); it != primes.cend(); ++it) {
