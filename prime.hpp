@@ -1,11 +1,17 @@
 #include <mutex>
 #include <set>
+#include <cmath>
 
 using namespace std;
 
-bool isPrime(const unsigned number) {
+typedef unsigned long long int ulli;
+
+bool isPrime(const ulli number) {
     if (number < 2) return false;
-    for (unsigned i = 2; i < number; i++) {
+    if (number == 2) return true;
+    if (number % 2 == 0) return false;
+    ulli max = sqrt(number);
+    for (ulli i = 3; i <= max; i += 2) {
         if (number % i == 0) {
             return false;
         }
@@ -13,8 +19,8 @@ bool isPrime(const unsigned number) {
     return true;
 }
 
-void findPrimes(const unsigned start, const unsigned end, set<unsigned> &primes, mutex &numMutex) {
-    for (unsigned i = start; i <= end; i++) {
+void findPrimes(const ulli start, const ulli end, set<ulli> &primes, mutex &numMutex) {
+    for (ulli i = start; i <= end; i++) {
         if (isPrime(i)) {
             lock_guard<mutex> lock(numMutex);
             primes.insert(i);
